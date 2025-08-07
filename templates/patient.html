@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Patient #{{ patient.id }}{% endblock %}
+{% block content %}
+<div class="patient-detail-container">
+    <a href="{{ url_for('dashboard') }}" class="back-link">&larr; Back to Dashboard</a>
+    <h1>Patient Report #{{ patient.id }}</h1>
+    
+    <div class="detail-grid">
+        <div class="detail-card risk-assessment {{ 'high-risk' if patient.predicted_icu_need }}">
+            <h2><i class="fas fa-brain"></i> AI Risk Assessment</h2>
+            <p class="risk-level">{{ 'HIGH RISK' if patient.predicted_icu_need else 'LOW RISK' }}</p>
+            <p><strong>ICU Need Prediction:</strong> {{ 'Yes' if patient.predicted_icu_need else 'No' }}</p>
+            <p><strong>Risk Score:</strong> {{ "%.2f" | format(patient.risk_score) }}</p>
+            <p><strong>Confidence:</strong> {{ "%.2f" | format(patient.prediction_confidence) }}</p>
+        </div>
+
+        <div class="detail-card">
+            <h2><i class="fas fa-user"></i> Patient Info</h2>
+            <p><strong>Age:</strong> {{ patient.age }}</p>
+            <p><strong>Gender:</strong> {{ patient.gender }}</p>
+            <p><strong>Location:</strong> {{ patient.location or 'N/A' }}</p>
+            <p><strong>Report Time:</strong> {{ patient.timestamp.strftime('%Y-%m-%d %H:%M') }}</p>
+        </div>
+
+        <div class="detail-card vital-signs">
+            <h2><i class="fas fa-heartbeat"></i> Vital Signs</h2>
+            <div class="vitals-grid">
+                <div><span>HR:</span> {{ patient.heart_rate }} BPM</div>
+                <div><span>BP:</span> {{ patient.blood_pressure_systolic }}/{{ patient.blood_pressure_diastolic }} mmHg</div>
+                <div><span>O2:</span> {{ patient.oxygen_saturation }}%</div>
+                <div><span>Temp:</span> {{ patient.temperature }}°F</div>
+                <div><span>Resp:</span> {{ patient.respiratory_rate }}/min</div>
+            </div>
+        </div>
+
+        {% if patient.paramedic_notes %}
+        <div class="detail-card notes">
+            <h2><i class="fas fa-clipboard"></i> Paramedic Notes</h2>
+            <p>{{ patient.paramedic_notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

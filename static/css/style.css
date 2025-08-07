@@ -1,0 +1,60 @@
+/* General Styling */
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f9; color: #333; margin: 0; }
+.main-content { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+.container { padding: 2rem; background: #fff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+/* Navigation */
+.navbar { background: #fff; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+.nav-brand { font-size: 1.25rem; font-weight: 600; color: #2563eb; text-decoration: none; }
+.nav-brand i { margin-right: 0.5rem; }
+.nav-links a { margin-left: 1.5rem; text-decoration: none; color: #4a5568; font-weight: 500; }
+.nav-links a:hover { color: #2563eb; }
+
+/* Buttons & Forms */
+.btn { padding: 0.75rem 1.5rem; border: none; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 1rem; }
+.btn-primary { background-color: #2563eb; color: #fff; }
+.btn-primary:hover { background-color: #1d4ed8; }
+.btn-secondary { background-color: #e2e8f0; color: #1e293b; }
+.form-container { max-width: 800px; margin: auto; }
+.patient-form .form-section { margin-bottom: 2rem; }
+.patient-form h3 { border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+.form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+.form-group { display: flex; flex-direction: column; }
+.form-group label { margin-bottom: 0.5rem; font-weight: 500; }
+.form-group input, .form-group select, .form-group textarea { padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 1rem; }
+.form-group.full-width { grid-column: 1 / -1; }
+
+/* Flash Messages */
+.flash-message { padding: 1rem; margin-bottom: 1rem; border-radius: 5px; text-align: center; }
+.flash-success { background: #dcfce7; color: #166534; }
+.flash-error { background: #fee2e2; color: #991b1b; }
+
+/* Dashboard */
+.dashboard-container { max-width: 1000px; margin: auto; }
+.dashboard-stats { display: flex; gap: 1rem; margin: 2rem 0; }
+.patient-list table { width: 100%; border-collapse: collapse; }
+.patient-list th, .patient-list td { text-align: left; padding: 0.75rem; border-bottom: 1px solid #e2e8f0; }
+.patient-list th { background: #f8fafc; }
+.high-risk-row { background-color: #fee2e2 !important; }
+.risk-tag { padding: 0.2rem 0.5rem; border-radius: 12px; font-size: 0.8rem; color: #fff; }
+.risk-tag.high { background: #dc2626; }
+.risk-tag.low { background: #16a34a; }
+
+/* Patient Detail */
+.patient-detail-container { max-width: 900px; margin: auto; }
+.back-link { display: inline-block; margin-bottom: 1rem; color: #4a5568; }
+.detail-grid { display: grid; gap: 1.5rem; margin-top: 2rem; }
+.detail-card { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.detail-card h2 { margin-top: 0; font-size: 1.2rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; margin-bottom: 1rem; }
+.risk-assessment { border-left: 5px solid #6b7280; }
+.risk-assessment.high-risk { border-left-color: #dc2626; }
+.vitals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+/* Hero Section */
+.hero-section { text-align: center; padding: 4rem 1rem; }
+.hero-stats { display: flex; justify-content: center; gap: 2rem; margin: 2rem 0; }
+.hero-stats .stat-card { background: #fff; padding: 1rem 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+.hero-stats .stat-card span { display: block; font-size: 2rem; font-weight: 700; color: #2563eb; }
+
+/* Footer */
+.footer { text-align: center; padding: 2rem; color: #6b7280; font-size: 0.9rem; margin-top: 2rem; }
