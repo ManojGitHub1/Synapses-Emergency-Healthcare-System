@@ -5,7 +5,7 @@ db = SQLAlchemy()
 
 class Patient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    timestamp = db.Column(db.DateTime, default=datetime.timestamp)
     
     # Basic Info
     age = db.Column(db.Integer, nullable=False)
