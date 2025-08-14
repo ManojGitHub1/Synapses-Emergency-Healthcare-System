@@ -28,6 +28,10 @@
         {% block content %}{% endblock %}
     </main>
     <footer class="footer">&copy; 2025 Emergency Response System</footer>
+
+    <!-- 🔹 fflate for browser-side compression -->
+    <script src="{{ url_for('static', filename='js/fflate.min.js') }}"></script>
+    <!-- 🔹 Your main JS file -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
