@@ -1,8 +1,13 @@
 Flask
 Flask-SQLAlchemy
 scikit-learn
-xgboost
 pandas
 numpy
 joblib
 gunicorn
+# --- Use the CPU-specific TensorFlow package ---
+tensorflow-cpu
+# --- Keras 3 will be installed as a dependency ---
+transformers
+sentencepiece
+torch
