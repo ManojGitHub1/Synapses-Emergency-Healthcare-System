@@ -5,7 +5,6 @@ pandas
 numpy
 joblib
 gunicorn
-xgboost
 
 tensorflow-cpu
 tf-keras

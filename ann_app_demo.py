@@ -1,13 +1,15 @@
 import os
+import numpy as np
 import pandas as pd
 import joblib
-import requests # The library for making web requests
+import tensorflow as tf
 from flask import Flask, render_template, request, redirect, url_for, flash
 from models import db, Patient
+from transformers import pipeline
 
 # --- App Initialization ---
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'a_very_secret_key'
+app.config['SECRET_KEY'] = 'a_very_secret_key_that_should_be_changed'
 db_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance', 'database.db')
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -16,77 +18,66 @@ try:
     os.makedirs(os.path.join(os.path.abspath(os.path.dirname(__file__)), 'instance'))
 except OSError:
     pass
+
 db.init_app(app)
 
-# --- Load LOCAL AI Models and Scaler ---
-MODEL_PATH = 'emergency_predictor_stacked.pkl'
+# --- Load AI Models and Scaler ---
+MODEL_PATH = 'emergency_predictor_ann.h5'
 SCALER_PATH = 'scaler.pkl'
-FEATURE_LIST_PATH = 'feature_list.pkl'
 
-predictor = joblib.load(MODEL_PATH)
+# Use the standard model loading method
+predictor = tf.keras.models.load_model(MODEL_PATH)
 scaler = joblib.load(SCALER_PATH)
-model_features = joblib.load(FEATURE_LIST_PATH)
-print("✅ Stacking Model and Scaler loaded successfully.")
+summarizer = pipeline("summarization", model="t5-small")
+print("✅ All AI models and scaler loaded successfully.")
 
-# --- Hugging Face API Configuration ---
-# We no longer load the summarizer model locally.
-API_URL = "https://api-inference.huggingface.co/models/t5-small"
-# IMPORTANT: Set your token as an environment variable for security
-# or replace "YOUR_TOKEN_HERE" for a quick test (not recommended for production)
-HF_TOKEN = os.getenv("HF_TOKEN", "YOUR_TOKEN_HERE")
-headers = {"Authorization": f"Bearer {HF_TOKEN}"}
+# This list MUST EXACTLY MATCH the order from the training script
+MODEL_FEATURES = [
+    'Age', 'Gender', 'HR_first', 'SysABP_first', 'DiasABP_first', 'SaO2_first',
+    'Temp_first', 'RespRate_first', 'GCS_first', 'Lactate_first', 'SAPS-I'
+]
 
-# This is the new function that calls the API
-def query_huggingface_api(payload):
-    response = requests.post(API_URL, headers=headers, json=payload)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        # If the API fails, return a default error message
-        print(f"Hugging Face API Error: {response.status_code} - {response.text}")
-        return [{"summary_text": "Generative summary could not be produced at this time."}]
-
-# --- Other configuration ---
+# Default values for features not on the web form
 DEFAULT_VALUES = { 'GCS_first': 14.0, 'Lactate_first': 2.0, 'SAPS-I': 38.0 }
 
+# Create the database tables if they don't exist
 with app.app_context():
     db.create_all()
 
+# --- Helper Function for Prediction ---
 def make_prediction(form_data):
-    patient_features_full = DEFAULT_VALUES.copy()
-    patient_features_full.update({
-        'Age': float(form_data['age']), 'Gender': 1 if form_data['gender'].lower() == 'male' else 0,
-        'HR_first': float(form_data['heart_rate']), 'SysABP_first': float(form_data['systolic_blood_pressure']),
-        'DiasABP_first': float(form_data['diastolic_blood_pressure']), 'SaO2_first': float(form_data['oxygen_saturation']),
-        'Temp_first': float(form_data['temperature']), 'RespRate_first': float(form_data['respiratory_rate']),
-    })
+    patient_features = {
+        'Age': float(form_data['age']),
+        'Gender': 1 if form_data['gender'].lower() == 'male' else 0,
+        'HR_first': float(form_data['heart_rate']),
+        'SysABP_first': float(form_data['systolic_blood_pressure']),
+        'DiasABP_first': float(form_data['diastolic_blood_pressure']),
+        'SaO2_first': float(form_data['oxygen_saturation']),
+        'Temp_first': float(form_data['temperature']),
+        'RespRate_first': float(form_data['respiratory_rate']),
+        **DEFAULT_VALUES
+    }
+
+    df = pd.DataFrame([patient_features], columns=MODEL_FEATURES)
+    scaled_features = scaler.transform(df)
+    risk_proba = predictor.predict(scaled_features)[0][0]
     
-    df_full = pd.DataFrame([patient_features_full], columns=model_features)
-    scaled_features_full = scaler.transform(df_full)
-    scaled_features_full_df = pd.DataFrame(scaled_features_full, columns=model_features)
-    
-    final_features_for_model = scaled_features_full_df[predictor.feature_names_in_]
-    
-    prediction_result = predictor.predict(final_features_for_model)[0]
-    risk_proba = predictor.predict_proba(final_features_for_model)[0][1]
-    
-    prompt = f"""Summarize this patient case for an ER doctor: 
+    prompt = f"""Summarize this patient case for an ER doctor based on initial field data: 
     A {form_data['age']}-year-old {form_data['gender']} presents with critical vitals.
     - Heart Rate: {form_data['heart_rate']} bpm
     - Blood Pressure: {form_data['systolic_blood_pressure']}/{form_data['diastolic_blood_pressure']} mmHg
     - O2 Saturation: {form_data['oxygen_saturation']}%
+    - Notes: {form_data.get('paramedic_notes', 'N/A')}
     """
-    # Call the new API function instead of the local pipeline
-    summary_json = query_huggingface_api({"inputs": prompt})
-    summary_text = summary_json[0].get('summary_text', 'Summary generation failed.')
-
+    summary_result = summarizer(prompt, max_length=60, min_length=20, do_sample=False)
+    
     return {
         'risk_score': float(risk_proba),
-        'predicted_icu_need': bool(prediction_result == 1),
-        'summary': summary_text
+        'predicted_icu_need': bool(risk_proba > 0.5),
+        'summary': summary_result[0]['summary_text']
     }
 
-# --- Routes (No changes needed) ---
+# --- Routes ---
 @app.route('/report', methods=['GET', 'POST'])
 def report():
     if request.method == 'POST':
@@ -113,13 +104,13 @@ def report():
         except Exception as e:
             db.session.rollback()
             flash(f"Error submitting report: {e}", 'error')
-            import traceback
-            traceback.print_exc()
+            print(f"FATAL ERROR in /report: {e}")
             return redirect(url_for('report'))
     return render_template('report.html')
 
 @app.route('/')
-def index(): return render_template('index.html')
+def index():
+    return render_template('index.html')
     
 @app.route('/dashboard')
 def dashboard():
@@ -133,3 +124,4 @@ def patient_detail(patient_id):
     
 if __name__ == '__main__':
     app.run(debug=True)
+    

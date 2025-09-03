@@ -4,10 +4,6 @@
 <div class="hero-section">
     <h1>AI-Powered Emergency Coordination</h1>
     <p>Real-time patient data analysis for faster, more effective hospital response.</p>
-    <div class="hero-stats">
-        <div class="stat-card"><span>{{ patient_count }}</span> Total Patients</div>
-        <div class="stat-card"><span>{{ high_risk_count }}</span> High-Risk Cases</div>
-    </div>
     <a href="{{ url_for('report') }}" class="btn btn-primary">Submit New Report</a>
 </div>
 {% endblock %}

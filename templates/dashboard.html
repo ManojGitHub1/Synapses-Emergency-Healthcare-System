@@ -3,11 +3,6 @@
 {% block content %}
 <div class="dashboard-container">
     <h1>Hospital Dashboard</h1>
-    <div class="dashboard-stats">
-        <div class="stat-card"><span>{{ total_patients }}</span> Total</div>
-        <div class="stat-card"><span>{{ high_risk_count }}</span> High-Risk</div>
-        <div class="stat-card"><span>{{ recent_count }}</span> Last 24h</div>
-    </div>
     <div class="patient-list">
         <table>
             <thead>
@@ -27,7 +22,7 @@
                     <td>{{ patient.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>{{ patient.heart_rate }} / {{ patient.blood_pressure_systolic }} / {{ patient.oxygen_saturation }}%</td>
                     <td>{{ "%.2f" | format(patient.risk_score) }}</td>
-                    <td>{% if patient.predicted_icu_need %}<span class="risk-tag high">Yes</span>{% else %}<span class="risk-tag low">No</span>{% endif %}</td>
+                    <td>{% if patient.predicted_icu_need %}<span class="risk-tag high">High Risk</span>{% else %}<span class="risk-tag low">Low Risk</span>{% endif %}</td>
                     <td><a href="{{ url_for('patient_detail', patient_id=patient.id) }}" class="btn btn-secondary">View</a></td>
                 </tr>
                 {% else %}

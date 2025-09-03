@@ -7,11 +7,15 @@
     
     <div class="detail-grid">
         <div class="detail-card risk-assessment {{ 'high-risk' if patient.predicted_icu_need }}">
-            <h2><i class="fas fa-brain"></i> AI Risk Assessment</h2>
+            <h2><i class="fas fa-brain"></i> ANN Risk Assessment</h2>
             <p class="risk-level">{{ 'HIGH RISK' if patient.predicted_icu_need else 'LOW RISK' }}</p>
             <p><strong>ICU Need Prediction:</strong> {{ 'Yes' if patient.predicted_icu_need else 'No' }}</p>
-            <p><strong>Risk Score:</strong> {{ "%.2f" | format(patient.risk_score) }}</p>
-            <p><strong>Confidence:</strong> {{ "%.2f" | format(patient.prediction_confidence) }}</p>
+            <p><strong>Risk Score (Probability):</strong> {{ "%.2f" | format(patient.risk_score) }}</p>
+        </div>
+
+        <div class="detail-card generative-summary">
+            <h2><i class="fas fa-file-medical-alt"></i> Generative AI Summary</h2>
+            <p>{{ patient.generative_summary or 'Summary not available.' }}</p>
         </div>
 
         <div class="detail-card">
